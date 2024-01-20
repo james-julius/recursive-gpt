@@ -6,16 +6,9 @@ import {
   StreamingTextResponse,
 } from "ai";
 import {
-  //  functions,
-  // runFunction
+   functions,
+  runFunction
 } from "./functions";
-
-// Create an OpenAI API client (that's edge friendly!)
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-export const runtime = "edge";
 
 export async function POST(req: Request) {
   if (
@@ -52,25 +45,24 @@ export async function POST(req: Request) {
     model: "gpt-3.5-turbo-0613",
     messages,
     stream: true,
-    // functions,
-    // function_call: "auto",
+    functions,
+    function_call: "auto",
   });
 
-  const stream = OpenAIStream(initialResponse);
-  // , {
-  //   experimental_onFunctionCall: async (
-  //     { name, arguments: args },
-  //     createFunctionCallMessages,
-  //   ) => {
-  //     // const result = await runFunction(name, args);
-  //     // const newMessages = createFunctionCallMessages(result);
-  //     return openai.chat.completions.create({
-  //       model: "gpt-3.5-turbo-0613",
-  //       stream: true,
-  //       messages: [...messages /*, ...newMessages */],
-  //     });
-  //   },
-  // });
+  const stream = OpenAIStream(initialResponse, {
+    experimental_onFunctionCall: async (
+      { name, arguments: args },
+      createFunctionCallMessages,
+    ) => {
+      const result = await runFunction(name, args);
+      const newMessages = createFunctionCallMessages(result);
+      return openai.chat.completions.create({
+        model: "gpt-3.5-turbo-0613",
+        stream: true,
+        messages: [...messages, ...newMessages],
+      });
+    },
+  });
 
   // const similarTopics = await openai.chat.completions.create({
   //   model: "gpt-3.5-turbo-0613",

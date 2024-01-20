@@ -12,9 +12,9 @@ import Textarea from "react-textarea-autosize";
 import { toast } from "sonner";
 
 const examples = [
-  "Example one",
-  "Example two",
-  "Example three"
+  "What is the deepest point of the ocean?",
+  "What are the biggest barriers in space exploration?",
+  "How do I get started learning AI?"
 ];
 
 export default function Chat() {
