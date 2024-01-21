@@ -49,6 +49,8 @@ export async function POST(req: Request) {
           {"title": "Topic 1", "description": "Description 1", "starting_prompt": "Prompt 1"},
           {"title": "Topic 2", "description": "Description 2", "starting_prompt": "Prompt 2"},
           {"title": "Topic 3", "description": "Description 3", "starting_prompt": "Prompt 3"}
+          {"title": "Topic 4", "description": "Description 4", "starting_prompt": "Prompt 4"}
+          {"title": "Topic 5", "description": "Description 5", "starting_prompt": "Prompt 5"}
         ]}`
     }],
     response_format: { type: "json_object"},
