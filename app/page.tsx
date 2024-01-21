@@ -47,9 +47,7 @@ export default function Chat() {
 
   const fetchSimilarTopics = async (content: string) => {
     const res = await fetch('/api/similar_topics', {
-      method: 'POST', body: {
-      message: content
-    } } )
+      method: 'POST', body: content } )
       .then((res) => res.json())
       .then((data) => {
         console.log('similar topics res');

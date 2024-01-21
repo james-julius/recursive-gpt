@@ -1,7 +1,7 @@
 import { kv } from "@vercel/kv";
 import { Ratelimit } from "@upstash/ratelimit";
 import { OpenAI } from "openai";
-
+import { NextResponse } from "next/server";
 // Create an OpenAI API client (that's edge friendly!)
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -36,26 +36,25 @@ export async function POST(req: Request) {
     }
   }
 
-  const { message } = await req.json();
-
   const similarTopics = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo-0613",
+    model: "gpt-3.5-turbo-1106",
     messages: [{
       role: 'user',
-      content: `Give me a list of similar topics in a current ai conversation where the last message was: ${message}`
+      content: `Give me a list of similar topics in a current ai conversation where the last message was: ${req.body}`
     },
       {
-        role: 'assistant to=json',
-        content: `[
+        role: 'system',
+        content: `respond in json format: { "topics": [
           {"title": "Topic 1", "description": "Description 1", "starting_prompt": "Prompt 1"},
           {"title": "Topic 2", "description": "Description 2", "starting_prompt": "Prompt 2"},
           {"title": "Topic 3", "description": "Description 3", "starting_prompt": "Prompt 3"}
-        ]`
+        ]}`
     }],
     response_format: { type: "json_object"},
   });
 
   console.log('similarTopics')
   console.log(JSON.stringify(similarTopics))
-  return new Response(JSON.stringify(similarTopics))
+
+  return NextResponse.json(JSON.stringify(similarTopics))
 }
