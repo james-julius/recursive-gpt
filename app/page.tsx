@@ -14,7 +14,7 @@ import { toast } from "sonner";
 const examples = [
   "What is the deepest point of the ocean?",
   "What are the biggest barriers in space exploration?",
-  "How do I get started learning AI?"
+  "How do I get started learning AI?",
 ];
 
 export default function Chat() {
@@ -33,7 +33,7 @@ export default function Chat() {
       }
     },
     onFinish: (response) => {
-      console.log('onFinish()');
+      console.log("onFinish()");
       console.log(response);
       fetchSimilarTopics(response.content);
     },
@@ -46,26 +46,28 @@ export default function Chat() {
   });
 
   const fetchSimilarTopics = async (content: string) => {
-    const body = JSON.stringify({ prevResponse: content })
-    const res = await fetch('/api/similar_topics', {
-      method: 'POST', body } )
+    const body = JSON.stringify({ prevResponse: content });
+    const res = await fetch("/api/similar_topics", {
+      method: "POST",
+      body,
+    })
       .then((res) => res.json())
       .then((data) => {
-        console.log('similar topics res');
-        console.log(data)
+        console.log("similar topics res");
+        console.log(data);
         // setSimilarTopics({
         //   ...similarTopics,
         // })
       })
-      .catch(e => console.error(e))
+      .catch((e) => console.error(e));
     console.log(res);
-  }
+  };
 
   const disabled = isLoading || input.length === 0;
 
   return (
     <main className="flex flex-col items-center justify-between pb-40">
-      <div className="absolute top-5 hidden w-full justify-between px-5 sm:flex"/>
+      <div className="absolute top-5 hidden w-full justify-between px-5 sm:flex" />
       {messages.length > 0 ? (
         messages.map((message, i) => (
           <div
@@ -106,10 +108,10 @@ export default function Chat() {
       ) : (
         <div className="border-gray-200sm:mx-0 mx-5 mt-20 max-w-screen-md rounded-md border sm:w-full">
           <div className="flex flex-col space-y-4 p-7 sm:p-10">
-            <h1 className="text-lg text-center font-semibold text-black">
+            <h1 className="text-center text-lg font-semibold text-black">
               Welcome to RecursiveGPT!
             </h1>
-            <p className="text-gray-500 text-center">
+            <p className="text-center text-gray-500">
               This is an{" "}
               <a
                 href="https://github.com/james-julius/recursive-gpt"
@@ -119,7 +121,9 @@ export default function Chat() {
               >
                 open-source
               </a>{" "}
-              AI chatbot that allows you to converse with ChatGPT while viewing adjacent topics, so you can see just how deep the LLM rabbithole goes.
+              AI chatbot that allows you to converse with ChatGPT while viewing
+              adjacent topics, so you can see just how deep the LLM rabbithole
+              goes.
             </p>
           </div>
           <div className="flex flex-col space-y-4 border-t border-gray-200 bg-gray-50 p-7 sm:p-10">
@@ -202,7 +206,6 @@ export default function Chat() {
           >
             Vercel AI SDK
           </a>
-
         </p>
       </div>
     </main>

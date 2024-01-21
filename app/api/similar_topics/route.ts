@@ -56,5 +56,5 @@ export async function POST(req: Request) {
 
   const similarTopics = similarTopicsRes.choices[0].message.content;
 
-  return NextResponse.json(similarTopics)
+  return NextResponse.json(JSON.parse(similarTopics));
 }
