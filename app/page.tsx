@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useChat } from "ai/react";
 import va from "@vercel/analytics";
 import clsx from "clsx";
@@ -20,6 +20,7 @@ const examples = [
 export default function Chat() {
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [similarTopics, setSimilarTopics] = useState({});
 
   const { messages, input, setInput, handleSubmit, isLoading } = useChat({
     onResponse: (response) => {
@@ -31,6 +32,11 @@ export default function Chat() {
         va.track("Chat initiated");
       }
     },
+    onFinish: (response) => {
+      console.log('onFinish()');
+      console.log(response);
+      fetchSimilarTopics(response.content);
+    },
     onError: (error) => {
       va.track("Chat errored", {
         input,
@@ -38,6 +44,23 @@ export default function Chat() {
       });
     },
   });
+
+  const fetchSimilarTopics = async (content: string) => {
+    const res = await fetch('/api/similar_topics', {
+      method: 'POST', body: {
+      message: content
+    } } )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('similar topics res');
+        console.log(data)
+        // setSimilarTopics({
+        //   ...similarTopics,
+        // })
+      })
+      .catch(e => console.error(e))
+    console.log(res);
+  }
 
   const disabled = isLoading || input.length === 0;
 
@@ -90,7 +113,7 @@ export default function Chat() {
             <p className="text-gray-500 text-center">
               This is an{" "}
               <a
-                href="https://github.com/steven-tey/chathn"
+                href="https://github.com/james-julius/recursive-gpt"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium underline underline-offset-4 transition-colors hover:text-black"

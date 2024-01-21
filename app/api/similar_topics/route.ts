@@ -1,16 +1,14 @@
 import { kv } from "@vercel/kv";
 import { Ratelimit } from "@upstash/ratelimit";
 import { OpenAI } from "openai";
-import {
-  OpenAIStream,
-  StreamingTextResponse,
-} from "ai";
-import {
-   functions,
-  runFunction
-} from "./functions";
+
+// Create an OpenAI API client (that's edge friendly!)
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function POST(req: Request) {
+  console.log(req)
   if (
     process.env.NODE_ENV !== "development" &&
     process.env.KV_REST_API_URL &&
@@ -38,45 +36,26 @@ export async function POST(req: Request) {
     }
   }
 
-  const { messages } = await req.json();
+  const { message } = await req.json();
 
-  // check if the conversation requires a function call to be made
-  const initialResponse = await openai.chat.completions.create({
+  const similarTopics = await openai.chat.completions.create({
     model: "gpt-3.5-turbo-0613",
-    messages,
-    stream: true,
-    functions,
-    function_call: "auto",
-  });
-
-  const stream = OpenAIStream(initialResponse, {
-    experimental_onFunctionCall: async (
-      { name, arguments: args },
-      createFunctionCallMessages,
-    ) => {
-      const result = await runFunction(name, args);
-      const newMessages = createFunctionCallMessages(result);
-      return openai.chat.completions.create({
-        model: "gpt-3.5-turbo-0613",
-        stream: true,
-        messages: [...messages, ...newMessages],
-      });
+    messages: [{
+      role: 'user',
+      content: `Give me a list of similar topics in a current ai conversation where the last message was: ${message}`
     },
+      {
+        role: 'assistant to=json',
+        content: `[
+          {"title": "Topic 1", "description": "Description 1", "starting_prompt": "Prompt 1"},
+          {"title": "Topic 2", "description": "Description 2", "starting_prompt": "Prompt 2"},
+          {"title": "Topic 3", "description": "Description 3", "starting_prompt": "Prompt 3"}
+        ]`
+    }],
+    response_format: { type: "json_object"},
   });
 
-  // const similarTopics = await openai.chat.completions.create({
-  //   model: "gpt-3.5-turbo-0613",
-  //   messages: [...messages,
-  //     {
-  //       role: 'assistant to=json',
-  //       content: `[
-  //         {"title": "Topic 1", "description": "Description 1", "starting_prompt": "Prompt 1"},
-  //         {"title": "Topic 2", "description": "Description 2", "starting_prompt": "Prompt 2"},
-  //         {"title": "Topic 3", "description": "Description 3", "starting_prompt": "Prompt 3"}
-  //       ]`
-  //   }],
-  //   response_format: { type: "json_object"},
-  // })
-
-  return new StreamingTextResponse(stream);
+  console.log('similarTopics')
+  console.log(JSON.stringify(similarTopics))
+  return new Response(JSON.stringify(similarTopics))
 }
