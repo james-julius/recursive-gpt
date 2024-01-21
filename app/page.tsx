@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useChat } from "ai/react";
+import { useChat, Message } from "ai/react";
 import va from "@vercel/analytics";
 import clsx from "clsx";
 import { LoadingCircle, SendIcon } from "./icons";
@@ -48,14 +48,22 @@ export default function Chat() {
       },
     });
 
-  const setTopicMessages = (topic: any) => {
-    setMessages([
-      {
-        id: "1",
-        role: "user",
-        content: topic.description,
-      },
-    ]);
+  const setChatMessages = (e: any, chat: any) => {
+    console.log(messages);
+    const new_messages = chat.data.conversation.map((c, index) => {
+      c.id = index;
+      return c;
+    });
+    const all_messages = messages.concat(new_messages);
+    console.log(all_messages);
+    setMessages(all_messages);
+    setInput("Tell me more about this topic");
+    handleSubmit(e);
+  };
+
+  const setTopicMessages = (e: any, topic: any) => {
+    setInput(topic.description);
+    handleSubmit(e);
   };
 
   const fetchSimilarTopics = async (content: string) => {
@@ -104,7 +112,10 @@ export default function Chat() {
         {similarChats.matches &&
           similarChats.matches.map((chat, index) => (
             <div key={index} className="mb-2">
-              <button className="rounded-md border border-gray-200 bg-white px-5 py-3 text-left text-sm text-gray-500 transition-all duration-75 hover:border-black hover:text-gray-700 active:bg-gray-50">
+              <button
+                className="rounded-md border border-gray-200 bg-white px-5 py-3 text-left text-sm text-gray-500 transition-all duration-75 hover:border-black hover:text-gray-700 active:bg-gray-50"
+                onClick={(e) => setChatMessages(e, chat)}
+              >
                 {/* Adjust how you want to display each chat item */}
                 <ul>
                   {chat.data.conversation.slice(0, 2).map((message, i) => (
@@ -291,7 +302,7 @@ export default function Chat() {
             <button
               key={i}
               className="rounded-md border border-gray-200 bg-white px-5 py-3 text-left text-sm text-gray-500 transition-all duration-75 hover:border-black hover:text-gray-700 active:bg-gray-50"
-              // onClick={() => setTopicMessages(topic)}
+              onClick={(e) => setTopicMessages(e, topic)}
             >
               <div>
                 <b>{topic.title}</b>
