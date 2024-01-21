@@ -2,9 +2,14 @@ from pathlib import Path
 
 import numpy as np
 import polars as pl
+from dotenv import load_dotenv
 from fastapi import FastAPI
+from openai import OpenAI
+from pydantic import BaseModel
 from tqdm import tqdm
 from usearch.index import Index
+
+load_dotenv()
 
 ### Index
 
@@ -39,7 +44,9 @@ def _search_index(query: np.ndarray):
     )
     df_matches_by_id = {
         r["conv_id_hash"]: r
-        for r in df.filter(pl.col.conv_id_hash.is_in(match_ids)).to_dicts()
+        for r in df.filter(pl.col.conv_id_hash.is_in(match_ids))
+        .drop("conv_embedding")
+        .to_dicts()
     }
 
     return {
@@ -58,6 +65,13 @@ def _search_index(query: np.ndarray):
 
 app = FastAPI()
 
+client = OpenAI()
+
+
+def _get_embedding(text):
+    response = client.embeddings.create(input=text, model="text-embedding-ada-002")
+    return np.array(response.data[0].embedding)
+
 
 @app.get("/")
 async def root():
@@ -70,3 +84,15 @@ async def some():
 
     # Search for zero vector to get some arbitrary results back
     return _search_index(np.zeros(index.ndim))
+
+
+class Query(BaseModel):
+    query: str
+
+
+@app.post("/query")
+async def query(query: Query):
+    assert index is not None, "index not initialized"
+
+    query_embedding = _get_embedding(query.query)
+    return _search_index(query_embedding)

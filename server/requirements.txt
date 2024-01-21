@@ -5,3 +5,4 @@ usearch
 openai
 polars
 tqdm
+python-dotenv
