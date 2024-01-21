@@ -8,7 +8,6 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: Request) {
-  console.log(req)
   if (
     process.env.NODE_ENV !== "development" &&
     process.env.KV_REST_API_URL &&
@@ -36,11 +35,13 @@ export async function POST(req: Request) {
     }
   }
 
-  const similarTopics = await openai.chat.completions.create({
+  const { prevResponse } = await req.json();
+
+  const similarTopicsRes = await openai.chat.completions.create({
     model: "gpt-3.5-turbo-1106",
     messages: [{
       role: 'user',
-      content: `Give me a list of similar topics in a current ai conversation where the last message was: ${req.body}`
+      content: `Give me a list of similar topics in a current ai conversation where the last message was: ${prevResponse}`
     },
       {
         role: 'system',
@@ -53,8 +54,7 @@ export async function POST(req: Request) {
     response_format: { type: "json_object"},
   });
 
-  console.log('similarTopics')
-  console.log(JSON.stringify(similarTopics))
+  const similarTopics = similarTopicsRes.choices[0].message.content;
 
-  return NextResponse.json(JSON.stringify(similarTopics))
+  return NextResponse.json(similarTopics)
 }
